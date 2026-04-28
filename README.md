@@ -1,8 +1,8 @@
-# Backend Semi Senior Technical Challenge
+# Backend Technical Challenge
 
-## Prueba técnica para Desarrollador Backend Semi Senior
+## Prueba técnica para Desarrollador Backend
 
-Este reto técnico forma parte del proceso de selección para la posición de **Desarrollador Backend Semi Senior**.
+Este reto técnico forma parte del proceso de selección para la posición de **Desarrollador Backend**.
 
 La prueba busca evaluar criterio real de desarrollo backend, manejo de Laravel/PHP, diseño de APIs, jobs/queues, procesamiento de notificaciones bancarias, conciliación de cierre, integración con servicios externos, base de datos, idempotencia, trazabilidad y lógica transaccional.
 
@@ -52,7 +52,7 @@ Se valorará el uso adecuado de:
 
 # 3. Tiempo esperado
 
-La prueba está pensada para resolverse en aproximadamente **8 horas efectivas** para un perfil semi senior.
+La prueba está pensada para resolverse en aproximadamente **4-6 horas**.
 
 Si por tiempo decides no implementar algún detalle secundario, puedes dejarlo explicado en el README de tu solución indicando cómo lo abordarías en un entorno de producción y por qué.
 
