@@ -417,9 +417,7 @@ El objetivo será entender no solo qué implementaste, sino por qué lo implemen
 
 La entrega debe realizarse mediante un repositorio privado de GitHub.
 
-Debes agregar como colaborador al usuario de GitHub indicado por la empresa o compartir el acceso correspondiente.
-
-En caso tengas algún inconveniente con GitHub, puedes enviar un archivo comprimido `.zip` con el proyecto completo.
+Debes agregar como colaborador al usuario de GitHub latinpay123 o compartir el acceso correspondiente.
 
 
 # 18. Plazo
@@ -427,14 +425,12 @@ En caso tengas algún inconveniente con GitHub, puedes enviar un archivo comprim
 El plazo de entrega será hasta:
 
 ```text
-[COLOCAR_FECHA_Y_HORA]
+Lunes 04 de Mayo del 2026 a las 11:30 am
 ```
 
-Luego de revisar tu solución, coordinaremos una entrevista técnica final para conversar sobre tus decisiones, estructura, manejo de casos borde y posibles mejoras.
+Luego de revisar tu solución y asignarte un puntaje, coordinaremos una entrevista técnica final para conversar sobre tus decisiones, estructura, manejo de casos borde y posibles mejoras.
 
 
 # 19. Nota final
-
-Se valorará más una solución simple, clara, segura y bien sustentada que una solución extensa pero desordenada.
 
 El objetivo de esta prueba no es medir únicamente velocidad de desarrollo, sino criterio técnico, orden, comprensión del flujo transaccional y capacidad para diseñar una solución mantenible.
