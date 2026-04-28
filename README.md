@@ -8,7 +8,6 @@ La prueba busca evaluar criterio real de desarrollo backend, manejo de Laravel/P
 
 No buscamos una solución innecesariamente extensa ni un sistema completo en producción. Buscamos una implementación clara, ordenada y técnicamente bien sustentada, donde se evidencie cómo tomarías decisiones frente a escenarios reales.
 
----
 
 # 1. Contexto del caso
 
@@ -22,7 +21,6 @@ Además, cuando una operación queda correctamente confirmada como pagada, el si
 
 El objetivo es construir una API backend que maneje este flujo de forma segura, evitando duplicados, inconsistencias, reprocesamientos y errores de liquidación.
 
----
 
 # 2. Stack sugerido
 
@@ -48,7 +46,6 @@ Se valorará el uso adecuado de:
 - Seeders o factories, si lo consideras necesario.
 - Logs y trazabilidad.
 
----
 
 # 3. Tiempo esperado
 
@@ -56,7 +53,6 @@ La prueba está pensada para resolverse en aproximadamente **4-6 horas**.
 
 Si por tiempo decides no implementar algún detalle secundario, puedes dejarlo explicado en el README de tu solución indicando cómo lo abordarías en un entorno de producción y por qué.
 
----
 
 # 4. Alcance de la prueba
 
@@ -73,7 +69,6 @@ Debes implementar los siguientes módulos:
 9. Simular una notificación a un servicio externo cuando una operación queda `PAID`.
 10. Consultar operaciones candidatas a liquidación considerando estado, conciliación y hora de corte.
 
----
 
 # 5. Módulo A: Crear operación de pago
 
@@ -126,7 +121,6 @@ Ejemplo de respuesta:
 
 Se valorará que el manejo de montos evite errores de precisión, por ejemplo usando centavos como entero o `DECIMAL` con una justificación clara.
 
----
 
 # 6. Módulo B: Recibir confirmación bancaria en tiempo real
 
@@ -170,7 +164,6 @@ El job puede llamarse, por ejemplo:
 ProcessBankNotificationJob
 ```
 
----
 
 # 7. Módulo C: Procesar la confirmación mediante job
 
@@ -189,7 +182,6 @@ El job debe encargarse de:
 
 Se valorará el uso de transacciones de base de datos cuando corresponda.
 
----
 
 # 8. Módulo D: Procesar conciliación de cierre del día
 
@@ -235,7 +227,6 @@ POST /api/v1/bank/reconciliation
 - Si el movimiento existe en conciliación pero nunca llegó por tiempo real, puedes procesarlo como confirmación tardía o dejarlo observado. Debes explicar tu decisión.
 - Debe quedar trazabilidad de lo procesado, duplicado, observado o no conciliado.
 
----
 
 # 9. Módulo E: Simular notificación a servicio externo
 
@@ -266,7 +257,6 @@ No es necesario conectarse a un proveedor real. Puedes simular la integración m
 
 Se valorará que el diseño permita reemplazar fácilmente el servicio simulado por una integración real.
 
----
 
 # 10. Módulo F: Consultar pagos candidatos a liquidación
 
@@ -291,7 +281,6 @@ Debe devolver operaciones aptas para liquidación.
 
 No es obligatorio implementar toda la liquidación contable. Basta con identificar correctamente qué pagos serían candidatos.
 
----
 
 # 11. Estados mínimos
 
@@ -313,7 +302,6 @@ No es obligatorio implementar una máquina de estados compleja, pero sí se eval
 
 Por ejemplo, una operación correctamente confirmada como `PAID` no debería volver a `PENDING` ni ser sobrescrita sin una regla válida.
 
----
 
 # 12. Base de datos
 
@@ -338,7 +326,6 @@ Se valorará que uses restricciones o índices para proteger la integridad del s
 
 Incluye en el README de tu solución una breve explicación de los índices principales y por qué los creaste.
 
----
 
 # 13. Pruebas mínimas esperadas
 
@@ -355,7 +342,6 @@ Incluye tests con Pest o PHPUnit para validar, como mínimo:
 
 No buscamos cobertura total, pero sí pruebas que demuestren que validaste los casos críticos.
 
----
 
 # 14. Entregables
 
@@ -371,7 +357,6 @@ Debes entregar:
 8. Explicación breve de tus decisiones de base de datos, índices e idempotencia.
 9. Explicación breve de cómo estructuraste la integración externa simulada.
 
----
 
 # 15. Criterios de evaluación
 
@@ -403,7 +388,6 @@ La prueba será evaluada sobre 100 puntos.
 | 65 a 74 | Evaluar solo si el perfil y expectativa salarial son convenientes |
 | Menos de 65 | No recomendable para continuar |
 
----
 
 # 16. Presentación técnica posterior
 
@@ -428,7 +412,6 @@ El objetivo será entender no solo qué implementaste, sino por qué lo implemen
 11. Tests implementados.
 12. Mejoras que aplicarías en producción.
 
----
 
 # 17. Entrega
 
@@ -438,7 +421,6 @@ Debes agregar como colaborador al usuario de GitHub indicado por la empresa o co
 
 En caso tengas algún inconveniente con GitHub, puedes enviar un archivo comprimido `.zip` con el proyecto completo.
 
----
 
 # 18. Plazo
 
@@ -450,7 +432,6 @@ El plazo de entrega será hasta:
 
 Luego de revisar tu solución, coordinaremos una entrevista técnica final para conversar sobre tus decisiones, estructura, manejo de casos borde y posibles mejoras.
 
----
 
 # 19. Nota final
 
