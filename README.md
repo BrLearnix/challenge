@@ -1,6 +1,6 @@
 # Backend Technical Challenge
 
-Este repositorio contiene la prueba técnica para el proceso de selección de Desarrollador Backend Semi Senior.
+Este repositorio contiene la prueba técnica para el proceso de selección de Desarrollador Backend.
 
 El reto simula un flujo transaccional relacionado con pagos, confirmaciones bancarias en tiempo real, conciliación de cierre, procesamiento asincrónico, idempotencia, trazabilidad y consulta de operaciones candidatas a liquidación.
 
@@ -23,7 +23,7 @@ Evaluar criterio real de desarrollo backend, especialmente en:
 
 ## Tiempo esperado
 
-La prueba está pensada para resolverse en aproximadamente 8 horas efectivas para un perfil semi senior.
+La prueba está pensada para resolverse en aproximadamente 4-6 horas.
 
 No buscamos una solución innecesariamente extensa ni un sistema completo en producción. Buscamos una implementación clara, ordenada y técnicamente bien sustentada.
 
