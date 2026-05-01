@@ -3,10 +3,12 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Enums\BankNotificationProcessingOutcome;
+use App\Enums\ExternalNotificationStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ReconciliationMovementOutcome;
 use App\Models\BankNotification;
 use App\Models\BankReconciliationMovement;
+use App\Models\ExternalNotification;
 use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -216,6 +218,9 @@ class BankReconciliationTest extends TestCase
         $this->assertSame(PaymentStatus::RECONCILED, $payment->status);
         $this->assertSame('MATCHED', $payment->reconciliation_match);
         $this->assertNotNull($payment->paid_at);
+
+        $external = ExternalNotification::query()->where('payment_id', $payment->id)->firstOrFail();
+        $this->assertSame(ExternalNotificationStatus::SENT, $external->status);
     }
 
     public function test_requires_webhook_auth(): void

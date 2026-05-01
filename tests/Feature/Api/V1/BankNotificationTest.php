@@ -3,8 +3,10 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Enums\BankNotificationProcessingOutcome;
+use App\Enums\ExternalNotificationStatus;
 use App\Enums\PaymentStatus;
 use App\Models\BankNotification;
+use App\Models\ExternalNotification;
 use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -76,6 +78,10 @@ class BankNotificationTest extends TestCase
         $this->assertSame(BankNotificationProcessingOutcome::PROCESSED_PAID->value, $notification->processing_outcome);
         $this->assertSame($payment->id, $notification->payment_id);
         $this->assertNotNull($notification->processed_at);
+
+        $external = ExternalNotification::query()->where('payment_id', $payment->id)->firstOrFail();
+        $this->assertSame(ExternalNotificationStatus::SENT, $external->status);
+        $this->assertGreaterThanOrEqual(1, $external->attempt_count);
     }
 
     public function test_duplicate_event_id_is_idempotent(): void
@@ -177,6 +183,11 @@ class BankNotificationTest extends TestCase
         ], $body);
 
         $response->assertAccepted();
-        $this->assertSame(PaymentStatus::PAID, Payment::query()->first()->status);
+
+        $paid = Payment::query()->firstOrFail();
+        $this->assertSame(PaymentStatus::PAID, $paid->status);
+
+        $external = ExternalNotification::query()->where('payment_id', $paid->id)->firstOrFail();
+        $this->assertSame(ExternalNotificationStatus::SENT, $external->status);
     }
 }

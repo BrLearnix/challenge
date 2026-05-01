@@ -24,6 +24,14 @@ Configura `BANK_WEBHOOK_SECRET` en `.env`. El webhook acepta `Authorization: Bea
 | POST | `/api/v1/bank/notifications` | Webhook banco (auth Bearer o HMAC). Guarda payload, evita duplicados por `event_id` y `bank_transaction_id`, encola `ProcessBankNotificationJob` y actualiza el pago a `PAID` o `OBSERVED` con auditoría. |
 | POST | `/api/v1/bank/reconciliation` | Cierre / lote por `bank` + `process_date`. Por movimiento: `MATCHED` si coincide con `PAID` y confirmación tiempo real (`bank_transaction_id`), `DISCREPANCY` si hay diferencias o falta match tiempo real, `UNMATCHED` si no existe `payment_code`. No reprocesa el mismo `bank_movement_id` en el lote. **Confirmación tardía:** si el pago sigue `PENDING` y monto/moneda coinciden, se marca `PAID` y luego `RECONCILED` y queda trazado en `payment_audits`. |
 
+### Notificación externa al pasar a PAID (módulo E)
+
+Cuando un pago queda `PAID` (webhook banco o confirmación tardía en conciliación), se encola `NotifyPaymentConfirmedJob` **tras el commit** de la transacción principal. El contrato `PaymentNotificationClient` está enlazado en `AppServiceProvider` a `FakePaymentNotificationClient`, que solo registra un log; en producción se sustituiría por un cliente HTTP con URL, timeouts estrictos y política de reintentos acorde al proveedor.
+
+La tabla `external_notifications` guarda un snapshot del payload, `attempt_count`, último error y estado (`PENDING` / `SENT` / `FAILED`). El job define `$tries` y `backoff()` para reintentos ante fallos transitorios.
+
+Para **simular** un fallo en el primer intento (útil en desarrollo o tests manuales): `PAYMENT_NOTIFICATION_SIMULATE_ERROR=true` en `.env`.
+
 
 ---
 

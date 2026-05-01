@@ -39,4 +39,14 @@ return [
         'secret' => env('BANK_WEBHOOK_SECRET'),
     ],
 
+    'payment_notification' => [
+        /**
+         * Solo pruebas/desarrollo: si es true, el primer intento del cliente fake lanza error (reintentos del job).
+         */
+        'simulate_transport_error' => filter_var(
+            env('PAYMENT_NOTIFICATION_SIMULATE_ERROR', false),
+            FILTER_VALIDATE_BOOL
+        ),
+    ],
+
 ];

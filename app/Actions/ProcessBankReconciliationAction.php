@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Enums\BankNotificationProcessingOutcome;
 use App\Enums\PaymentStatus;
 use App\Enums\ReconciliationMovementOutcome;
+use App\Jobs\NotifyPaymentConfirmedJob;
 use App\Models\BankNotification;
 use App\Models\BankReconciliationBatch;
 use App\Models\BankReconciliationMovement;
@@ -303,6 +304,8 @@ class ProcessBankReconciliationAction
             'paid_at' => $movement->paid_at ?? $payment->paid_at ?? now(),
             'observed_reason' => null,
         ]);
+
+        NotifyPaymentConfirmedJob::dispatch($payment->id);
 
         PaymentAudit::query()->create([
             'payment_id' => $payment->id,

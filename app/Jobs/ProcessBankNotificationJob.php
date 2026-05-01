@@ -36,7 +36,9 @@ class ProcessBankNotificationJob implements ShouldQueue
 
     public function handle(): void
     {
-        DB::transaction(function (): void {
+        $paymentIdToNotify = null;
+
+        DB::transaction(function () use (&$paymentIdToNotify): void {
             $notification = BankNotification::query()
                 ->whereKey($this->bankNotificationId)
                 ->first();
@@ -70,6 +72,7 @@ class ProcessBankNotificationJob implements ShouldQueue
                     'processing_outcome' => BankNotificationProcessingOutcome::IDEMPOTENT_ALREADY_PAID->value,
                     'processed_at' => now(),
                 ]);
+                $paymentIdToNotify = $payment->id;
 
                 return;
             }
@@ -139,7 +142,13 @@ class ProcessBankNotificationJob implements ShouldQueue
                 'processing_outcome' => BankNotificationProcessingOutcome::PROCESSED_PAID->value,
                 'processed_at' => now(),
             ]);
+
+            $paymentIdToNotify = $payment->id;
         });
+
+        if ($paymentIdToNotify !== null) {
+            NotifyPaymentConfirmedJob::dispatch($paymentIdToNotify);
+        }
     }
 
     /**
