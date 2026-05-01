@@ -17,7 +17,7 @@ Solución en **Laravel 12** / **PHP 8.2+**. Enunciado: [`docs/CHALLENGE_REQUIREM
 ### Requisitos e instalación
 
 - PHP 8.2+, Composer, extensiones habituales de Laravel.
-- SQLite (por defecto en `.env.example`) o MySQL configurando `DB_*`.
+- MySQL configurando `DB_*`.
 
 ```bash
 composer install

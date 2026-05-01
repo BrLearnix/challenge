@@ -6,7 +6,7 @@ Este documento complementa el [`README.md`](../README.md) del ra√≠z. Describe c√
 
 - PHP **8.2+** y **Composer**.
 - Extensiones habituales de Laravel (pdo, openssl, mbstring, tokenizer, xml, ctype, json, etc.).
-- Base de datos: el proyecto funciona con **SQLite** (por defecto en `.env.example`) o **MySQL** (ajustar `DB_*` en `.env`).
+- Base de datos: el proyecto funciona con **MySQL** (ajustar `DB_*` en `.env`).
 
 ## Puesta en marcha
 
