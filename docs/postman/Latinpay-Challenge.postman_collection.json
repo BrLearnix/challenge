@@ -1,0 +1,161 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Latinpay — Backend Challenge API",
+		"description": "Colección para revisar la prueba técnica (Laravel). Configure variables de entorno: base_url, webhook_secret, merchant_id. Tras crear un pago, copie payment_code a la variable homónima.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000"
+		},
+		{
+			"key": "webhook_secret",
+			"value": ""
+		},
+		{
+			"key": "merchant_id",
+			"value": "1"
+		},
+		{
+			"key": "payment_code",
+			"value": ""
+		},
+		{
+			"key": "event_id",
+			"value": "evt_postman_001"
+		},
+		{
+			"key": "bank_transaction_id",
+			"value": "bank_tx_postman_001"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Pagos",
+			"item": [
+				{
+					"name": "Crear pago (PENDING)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"merchant_id\": {{merchant_id}},\n  \"customer_document\": \"76359665\",\n  \"amount\": 150.50,\n  \"currency\": \"PEN\",\n  \"description\": \"Postman / revisión técnica\"\n}"
+						},
+						"url": "{{base_url}}/api/v1/payments"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Webhook banco",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{webhook_secret}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "Notificación tiempo real (encola job)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{webhook_secret}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"event_id\": \"{{event_id}}\",\n  \"bank_transaction_id\": \"{{bank_transaction_id}}\",\n  \"payment_code\": \"{{payment_code}}\",\n  \"amount\": 150.50,\n  \"currency\": \"PEN\",\n  \"status\": \"PAID\",\n  \"paid_at\": \"2026-04-24 20:44:00\"\n}"
+						},
+						"url": "{{base_url}}/api/v1/bank/notifications"
+					},
+					"response": []
+				},
+				{
+					"name": "Conciliación de cierre",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{webhook_secret}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"bank\": \"BANK_A\",\n  \"process_date\": \"2026-04-24\",\n  \"movements\": [\n    {\n      \"bank_movement_id\": \"mov_postman_001\",\n      \"bank_transaction_id\": \"{{bank_transaction_id}}\",\n      \"payment_code\": \"{{payment_code}}\",\n      \"amount\": 150.50,\n      \"currency\": \"PEN\",\n      \"paid_at\": \"2026-04-24 20:44:30\"\n    }\n  ]\n}"
+						},
+						"url": "{{base_url}}/api/v1/bank/reconciliation"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Liquidación",
+			"item": [
+				{
+					"name": "Candidatos a liquidación",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/api/v1/settlements/candidates?as_of=2026-04-27&merchant_id={{merchant_id}}"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
