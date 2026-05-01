@@ -30,6 +30,85 @@ php artisan serve
 
 Configure **`BANK_WEBHOOK_SECRET`** en `.env` antes de llamar a los webhooks. Opcional: **`PAYMENT_NOTIFICATION_SIMULATE_ERROR=true`** para forzar un fallo simulado en el primer intento de notificación externa.
 
+Para una demo en **2 minutos** sin worker, deje **`QUEUE_CONNECTION=sync`** en `.env` (los jobs corren dentro del mismo request). Si usa **`database`**, abra otra terminal con `php artisan queue:work`.
+
+---
+
+### 🚀 Quick test (≈2 minutos)
+
+Flujo mínimo que puede copiar y pegar (Linux/macOS/Git Bash). Ajuste `BASE`, `SECRET` y las fechas si lo necesita.
+
+```bash
+export BASE=http://127.0.0.1:8000
+export SECRET='pegue_aqui_BANK_WEBHOOK_SECRET'
+
+# 1. Crear pago → copie payment_code de la respuesta en PAYMENT_CODE
+curl -s -X POST "$BASE/api/v1/payments" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"merchant_id":1,"customer_document":"76359665","amount":150.50,"currency":"PEN","description":"Quick test"}'
+
+# 2. Webhook banco (event_id y bank_transaction_id únicos por intento)
+curl -s -X POST "$BASE/api/v1/bank/notifications" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -H "Authorization: Bearer $SECRET" \
+  -d '{"event_id":"evt_quick_001","bank_transaction_id":"bank_tx_quick_001","payment_code":"PEGUE_PAYMENT_CODE","amount":150.50,"currency":"PEN","status":"PAID","paid_at":"2026-04-24 20:44:00"}'
+
+# 3. Conciliación de cierre (mismo payment_code y mismo bank_transaction_id que el paso 2)
+curl -s -X POST "$BASE/api/v1/bank/reconciliation" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -H "Authorization: Bearer $SECRET" \
+  -d '{"bank":"BANK_A","process_date":"2026-04-24","movements":[{"bank_movement_id":"mov_quick_001","bank_transaction_id":"bank_tx_quick_001","payment_code":"PEGUE_PAYMENT_CODE","amount":150.50,"currency":"PEN","paid_at":"2026-04-24 20:44:30"}]}'
+
+# 4. Candidatos a liquidación (ej.: pago antes del corte 20:45 el viernes → suele ser elegible desde el lunes siguiente)
+curl -s "$BASE/api/v1/settlements/candidates?as_of=2026-04-27" -H "Accept: application/json"
+```
+
+Respuestas esperadas: **201** (pago), **202** (webhook aceptado), **200** (conciliación), **200** con `candidates` (liquidación). Detalle y variantes: [`docs/API.md`](docs/API.md).
+
+---
+
+### ❗ Notas importantes
+
+- Si un pago tiene `reconciliation_match = DISCREPANCY`, **no aparece** en candidatos a liquidación hasta que ese flag se corrija en un diseño real (aquí queda excluido a propósito).
+- **`as_of`** en settlements es una fecha de valoración en **America/Lima**: la primera fecha hábil en que el pago es elegible depende de **`paid_at`** y del corte **20:45**. Si consulta el **mismo día calendario** que el pago y ese día es anterior al “primer día hábil elegible”, la lista puede venir **vacía** sin que el sistema esté roto.
+- Operaciones **`OBSERVED`** o **`PENDING`** no son candidatas; **`settled_at`** no nulo tampoco.
+- En conciliación, un segundo movimiento con el mismo **`bank_movement_id`** dentro del **mismo** lote (`bank` + `process_date`) se **omite** como duplicado (ver `summary.duplicates_skipped`).
+- Candidatos incluyen estados **`PAID`** y **`RECONCILED`** sin discrepancia, alineado al flujo “confirmado y cuadrado con el banco”.
+
+---
+
+### 🔄 Flujo del sistema
+
+```
+Payment (PENDING)
+    → POST /bank/notifications (webhook autenticado)
+    → ProcessBankNotificationJob → PAID u OBSERVED (+ auditoría)
+    → POST /bank/reconciliation → RECONCILED + MATCHED, DISCREPANCY o movimiento UNMATCHED (+ auditoría)
+    → NotifyPaymentConfirmedJob (tras PAID / confirmación tardía) → registro en external_notifications
+    → GET /settlements/candidates (filtros: estado, discrepancia, settled_at, reglas 20:45 Lima)
+```
+
+---
+
+### 🧠 Decisiones de diseño
+
+- **Montos:** se guardan en **centavos (`amount_minor`)** para evitar errores de coma flotante; en API se exponen como decimal con formato controlado.
+- **Idempotencia en capas:** unicidad de **`event_id`** y **`bank_transaction_id`** en notificaciones; **`bank_movement_id`** único por lote de conciliación; **`payment_id`** único en notificaciones externas; jobs toleran reintentos sin doble efecto donde aplica.
+- **Conciliación vs tiempo real:** para un pago ya **PAID** por webhook, el match exige coherencia de importes y una notificación **PAID** previa con el mismo **`bank_transaction_id`**; si el pago sigue **PENDING**, el cierre puede actuar como **confirmación tardía** (documentado en código y en `docs/API.md`).
+- **Desacoplamiento:** la lógica pesada del banco y la notificación al comercio **no** va en el controller; va en **Actions** + **Jobs** (`ShouldQueue`), con transacciones DB en los puntos críticos.
+- **Integración externa:** contrato **`PaymentNotificationClient`** + implementación **`FakePaymentNotificationClient`** intercambiable en `AppServiceProvider`.
+
+---
+
+### ⚠️ Problemas comunes
+
+- **`QUEUE_CONNECTION=database` sin worker:** los webhooks quedan en **202** pero el pago no cambia hasta ejecutar **`php artisan queue:work`**.
+- **`BANK_WEBHOOK_SECRET` vacío:** respuesta **503** (“no configurado”); con secreto incorrecto → **401**.
+- **`Authorization` mal puesto en webhooks:** debe ser literalmente **`Bearer <mismo valor que .env>`** (con espacio después de `Bearer`).
+- **Settlement vacío:** revise **`as_of`** (fecha hábil posterior al pago según corte 20:45), **`merchant_id`** si filtra, y que no sea **`DISCREPANCY` / OBSERVED / settled**.
+- **Segunda línea de conciliación “no hace nada”:** mismo **`bank_movement_id`** que una ya procesada en ese lote → idempotencia intencional.
+- **`event_id` o `bank_transaction_id` repetidos en webhook:** respuesta idempotente **200** con flags de duplicado; no se crea segundo efecto sobre el pago.
+
 ---
 
 ### Tests automatizados
