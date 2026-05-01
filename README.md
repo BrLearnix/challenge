@@ -12,13 +12,18 @@ php artisan migrate
 php artisan db:seed
 ```
 
-Colas (cuando implementes jobs): `php artisan queue:work` con `QUEUE_CONNECTION` según `.env` (por defecto `database`).
+Colas: con `QUEUE_CONNECTION=database` ejecuta `php artisan queue:work` para procesar jobs (p. ej. confirmaciones bancarias). En tests la cola es `sync`.
+
+Configura `BANK_WEBHOOK_SECRET` en `.env`. El webhook acepta `Authorization: Bearer <secret>` o cabecera `X-Bank-Signature` con hex(`HMAC-SHA256(body_crudo, secret)`).
 
 ### API implementada
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | POST | `/api/v1/payments` | Crea operación en estado `PENDING`. Código único `LTP-YYYYMMDD-######` (secuencia por día, zona `APP_TIMEZONE`). El body envía `amount` en soles con hasta 2 decimales; en BD se guarda en centavos (`amount_minor`) para precisión. |
+| POST | `/api/v1/bank/notifications` | Webhook banco (auth Bearer o HMAC). Guarda payload, evita duplicados por `event_id` y `bank_transaction_id`, encola `ProcessBankNotificationJob` y actualiza el pago a `PAID` o `OBSERVED` con auditoría. |
+| POST | `/api/v1/bank/reconciliation` | Cierre / lote por `bank` + `process_date`. Por movimiento: `MATCHED` si coincide con `PAID` y confirmación tiempo real (`bank_transaction_id`), `DISCREPANCY` si hay diferencias o falta match tiempo real, `UNMATCHED` si no existe `payment_code`. No reprocesa el mismo `bank_movement_id` en el lote. **Confirmación tardía:** si el pago sigue `PENDING` y monto/moneda coinciden, se marca `PAID` y luego `RECONCILED` y queda trazado en `payment_audits`. |
+
 
 ---
 

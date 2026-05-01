@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Enums;
+
+enum BankNotificationProcessingOutcome: string
+{
+    case QUEUED = 'QUEUED';
+    case PROCESSED_PAID = 'PROCESSED_PAID';
+    case PROCESSED_OBSERVED = 'PROCESSED_OBSERVED';
+    case PAYMENT_NOT_FOUND = 'PAYMENT_NOT_FOUND';
+    case IDEMPOTENT_ALREADY_PAID = 'IDEMPOTENT_ALREADY_PAID';
+    case SKIPPED_INVALID_PAYMENT_STATE = 'SKIPPED_INVALID_PAYMENT_STATE';
+
+    case JOB_FAILED = 'JOB_FAILED';
+}

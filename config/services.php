@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'bank_webhook' => [
+        'secret' => env('BANK_WEBHOOK_SECRET'),
+    ],
+
 ];
